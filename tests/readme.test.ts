@@ -77,3 +77,22 @@ test('profile views counter is off by default and uses the username and heading 
   p.socials = []
   assert.ok(!generateReadme(p).includes('komarev'), 'no username, no counter')
 })
+
+test('saved profiles from before the rename get the new example name, edits stay', async () => {
+  const { mergeProfile } = await import('../src/lib/readme.ts')
+  const old = defaultProfile()
+  old.intro.working = 'GitFolio'
+  old.projects = [
+    { name: 'GitFolio', url: 'https://github.com/you/gitfolio', description: 'A no-code GitHub profile README generator.', tech: 'React' },
+    { name: 'GitFolio', url: 'https://github.com/me/my-own-gitfolio', description: 'Mine', tech: '' },
+    { name: 'FoundIt', url: '', description: '', tech: '' },
+  ]
+  const m = mergeProfile(old)
+  assert.equal(m.intro.working, 'Selfreadme')
+  assert.deepEqual(m.projects[0], { name: 'Selfreadme', url: 'https://github.com/you/selfreadme', description: 'A no-code GitHub profile README generator.', tech: 'React' })
+  assert.equal(m.projects[1].name, 'GitFolio', "a project of the visitor's own named GitFolio is kept")
+  assert.equal(m.projects[2].name, 'FoundIt')
+  const edited = defaultProfile()
+  edited.intro.working = 'my thesis'
+  assert.equal(mergeProfile(edited).intro.working, 'my thesis')
+})

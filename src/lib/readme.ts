@@ -112,14 +112,19 @@ export function applyVisitor(p: Profile, name: string, user: string): Profile {
   return next
 }
 
-// Fills older saved profiles with sections added since they were stored.
+// Fills older saved profiles with sections added since they were stored, and renames the example
+// values from before the GitFolio → Selfreadme rename that the visitor never edited.
 export function mergeProfile(saved: Partial<Profile>): Profile {
   const d = defaultProfile()
   const s = { ...d.settings, ...saved.settings }
   s.enabled = { ...d.settings.enabled, ...saved.settings?.enabled }
   s.titles = { ...d.settings.titles, ...saved.settings?.titles }
   s.order = [...s.order.filter(k => SECTION_KEYS.includes(k)), ...SECTION_KEYS.filter(k => !s.order.includes(k))]
-  return { ...d, ...saved, settings: s }
+  const intro = { ...d.intro, ...saved.intro }
+  if (intro.working === 'GitFolio') intro.working = d.intro.working
+  const projects = (saved.projects ?? d.projects).map(p =>
+    p.name === 'GitFolio' && p.url === 'https://github.com/you/gitfolio' ? { ...p, name: d.projects[0].name, url: d.projects[0].url } : p)
+  return { ...d, ...saved, settings: s, intro, projects }
 }
 
 // Platane/snk draws the contribution graph as a snake SVG and publishes it to the profile repo's "output" branch.
