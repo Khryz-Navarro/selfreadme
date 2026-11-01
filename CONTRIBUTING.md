@@ -14,7 +14,7 @@ Please don't paste personal details you wouldn't want public; issues are visible
 
 ## Suggesting a feature
 
-Open an issue describing the problem it solves for someone making their first profile. Check the [roadmap](docs/roadmap.md) first, as it may already be planned.
+Open an issue describing the problem it solves for someone making their first profile. Check the [roadmap](https://github.com/Khryz-Navarro/selfreadme/wiki/Roadmap) first, as it may already be planned.
 
 ## Making a change
 
@@ -29,7 +29,7 @@ npm install
 npm run dev
 ```
 
-The [developer guide](docs/developer-guide.md) explains how the code is organised.
+The [developer guide](https://github.com/Khryz-Navarro/selfreadme/wiki/Developer-guide) explains how the code is organised.
 
 ### 2. Work on a branch
 

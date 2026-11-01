@@ -6,7 +6,7 @@ Selfreadme turns a few fields and clicks into a finished `README.md` for your Gi
 
 **[Use Selfreadme →](https://khryz-navarro.github.io/selfreadme/)**
 
-![The Selfreadme landing page: a giant cropped name band, a live profile card you can type into, and a column of plum-to-pink tiles ending in "Build my README"](docs/images/landing-hero.jpg)
+![The Selfreadme landing page: a giant cropped name band, a live profile card you can type into, and a column of plum-to-pink tiles ending in "Build my README"](https://raw.githubusercontent.com/wiki/Khryz-Navarro/selfreadme/images/landing-hero.jpg)
 
 ## Features
 
@@ -19,7 +19,7 @@ Selfreadme turns a few fields and clicks into a finished `README.md` for your Gi
 - **Your layout.** Turn sections on and off, rename their headings and change their order.
 - **Private.** No account and no server: your profile is saved in your own browser.
 
-![The editor: form sections on the left, the README preview on the right](docs/images/editor.jpg)
+![The editor: form sections on the left, the README preview on the right](https://raw.githubusercontent.com/wiki/Khryz-Navarro/selfreadme/images/editor.jpg)
 
 ## How it works
 
@@ -27,7 +27,7 @@ Selfreadme turns a few fields and clicks into a finished `README.md` for your Gi
 2. Click **Download README.md** (or **Copy markdown**).
 3. On GitHub, create a public repository named exactly like your username, for example `octocat/octocat`, and add the file as `README.md`.
 
-GitHub shows that file at the top of your profile. The [user guide](docs/user-guide.md) walks through every step, including the snake and the views counter.
+GitHub shows that file at the top of your profile. The [user guide](https://github.com/Khryz-Navarro/selfreadme/wiki/User-guide) walks through every step, including the snake and the views counter.
 
 ## Run it locally
 
@@ -40,16 +40,18 @@ npm install
 npm run dev
 ```
 
-Then open the address Vite prints, usually <http://localhost:5173/>. The [developer guide](docs/developer-guide.md) covers the scripts, the code and how deployment works.
+Then open the address Vite prints, usually <http://localhost:5173/>. The [developer guide](https://github.com/Khryz-Navarro/selfreadme/wiki/Developer-guide) covers the scripts, the code and how deployment works.
 
 ## Documentation
 
+The full documentation lives in the [project wiki](https://github.com/Khryz-Navarro/selfreadme/wiki).
+
 | Guide | For |
 | --- | --- |
-| [User guide](docs/user-guide.md) | Making and publishing your profile README, step by step |
-| [Developer guide](docs/developer-guide.md) | Stack, project structure, the markdown generator, testing and deployment |
-| [FAQ](docs/faq.md) | Common questions and known limits |
-| [Roadmap](docs/roadmap.md) | What's planned next |
+| [User guide](https://github.com/Khryz-Navarro/selfreadme/wiki/User-guide) | Making and publishing your profile README, step by step |
+| [Developer guide](https://github.com/Khryz-Navarro/selfreadme/wiki/Developer-guide) | Stack, project structure, the markdown generator, testing and deployment |
+| [FAQ](https://github.com/Khryz-Navarro/selfreadme/wiki/FAQ) | Common questions and known limits |
+| [Roadmap](https://github.com/Khryz-Navarro/selfreadme/wiki/Roadmap) | What's planned next |
 | [Contributing](CONTRIBUTING.md) | How to report issues and send pull requests |
 
 ## Built with
