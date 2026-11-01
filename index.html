@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Selfreadme · Your GitHub profile, written for you</title>
     <meta name="description" content="Fill in a form, pick your badges and download a finished GitHub profile README.md. No markdown, no sign-in." />
+    <script>
+      // Applies the saved site theme before the first paint, so a light theme never flashes dark (see src/lib/theme.ts).
+      try {
+        var t = JSON.parse(localStorage.getItem('selfreadme-theme') || 'null'), r = document.documentElement
+        if (t && t.vars) { for (var k in t.vars) r.style.setProperty(k, t.vars[k]); r.style.colorScheme = t.mode }
+        r.classList.toggle('dark', !t || t.mode !== 'light')
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
