@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
-// FormSubmit forwards each submission to this inbox; its first one triggers an activation email.
-// shortcut: the address is visible in the page's code; swap it for the random alias FormSubmit sends after activation.
-const FEEDBACK_URL = 'https://formsubmit.co/ajax/khryznavarro@gmail.com'
+// FormSubmit forwards each submission to the developer's inbox. The random alias it issues after activation
+// stands in for the email address, so the address never appears in the page's code.
+const FEEDBACK_URL = 'https://formsubmit.co/ajax/81ded7b92e06dd360c3f8e72756065e1'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
