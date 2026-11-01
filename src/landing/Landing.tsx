@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Editor, { useProfile } from '@/App'
 import Feedback from './Feedback'
+import ThemePanel from './ThemePanel'
 import { applyVisitor, badgeUrl, githubUser } from '@/lib/readme'
 import badgesImg from './img/badges.jpg'
 import editorImg from './img/editor.jpg'
@@ -128,6 +129,7 @@ export default function Landing() {
           <a className="tile link-tile" style={v({ '--i': 2 })} href="#features">What's included</a>
           <a className="tile link-tile" style={v({ '--i': 3 })} href="#steps">How it works</a>
           <a className="tile link-tile" style={v({ '--i': 4 })} href="#faq">Questions</a>
+          <ThemePanel style={v({ '--i': 5 })} />
         </nav>
 
         <div className="rail-left" style={v({ '--i': 2 })}>
@@ -284,7 +286,7 @@ export default function Landing() {
       <footer className="footer" aria-label="Selfreadme">
         <p className="mark" aria-label="Selfreadme">
           {[...'Selfreadme'].map((ch, i) => (
-            <span key={i} aria-hidden="true" style={v({ '--h': `${[100, 72, 86, 64, 94, 70, 90, 78, 96, 68][i]}%`, '--c': i % 2 ? 'var(--ink)' : 'var(--s4)' })}>{ch}</span>
+            <span key={i} aria-hidden="true" style={v({ '--h': `${[100, 72, 86, 64, 94, 70, 90, 78, 96, 68][i]}%`, '--c': i % 2 ? 'var(--ink)' : 'var(--s4)', '--l': i % 2 ? 'var(--bg)' : 'var(--pink-ink)' })}>{ch}</span>
           ))}
         </p>
         <div className="foot-cols">
