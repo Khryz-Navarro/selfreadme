@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Editor, { useProfile } from '@/App'
+import Feedback from './Feedback'
 import { applyVisitor, badgeUrl, githubUser } from '@/lib/readme'
 import badgesImg from './img/badges.jpg'
 import editorImg from './img/editor.jpg'
@@ -305,6 +306,8 @@ export default function Landing() {
           <a className="button small" href={EDITOR}>Build my README</a>
         </div>
       </footer>
+
+      <Feedback />
     </>
   )
 }
@@ -314,7 +317,7 @@ const FAQ: [string, string][] = [
   ['Why does the repository need my username as its name?', 'That\'s how GitHub knows it\'s your profile README. If your username is mayareyes, the repository is github.com/mayareyes/mayareyes. Create it as public and tick "Add a README file", then replace that file with yours.'],
   ['Do I need to know markdown or HTML?', 'No. You fill in fields and tap badges; Selfreadme writes the markdown and the small bits of HTML GitHub allows for centring and badges. You can look at the code it writes, but you never have to touch it.'],
   ['Is it free? Do I need an account?', "It's free, and there's no account. The editor is right on this page; start typing."],
-  ['Where is my information stored?', 'Only in your own browser, so you can close the tab and pick up where you left off. Nothing you type is sent to a Selfreadme server. Badge images load from shields.io, the same place your finished profile loads them from, and each visit adds one to a public visit counter on Abacus, without cookies.'],
+  ['Where is my information stored?', 'Only in your own browser, so you can close the tab and pick up where you left off. Nothing you type is sent to a Selfreadme server. Badge images load from shields.io, the same place your finished profile loads them from, and each visit adds one to a public visit counter on Abacus, without cookies. If you send feedback, that message (with your browser and screen size) goes to the developer by email through FormSubmit.'],
   ['Can I change it later?', 'Yes. Come back in the same browser and your profile is still there. Edit it, download again, and replace README.md in your repository.'],
   ['How does the contribution snake work?', 'Selfreadme gives you a small GitHub Actions file to copy or download. Add it to your profile repository and GitHub redraws the snake from your contribution graph every day.'],
   ['Will it look the same on GitHub?', 'The preview uses GitHub\'s own markdown styles and only the HTML GitHub accepts, so what you approve is what visitors see.'],

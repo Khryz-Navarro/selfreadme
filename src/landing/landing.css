@@ -240,7 +240,7 @@ p { text-wrap: pretty; }
 
 /* ---------- footer: the mark, built large ---------- */
 /* The visits row sits directly on the footer, as its top strip. */
-.footer { margin-top: var(--gap); padding: 24px var(--gap) 24px; background: var(--surface); }
+.footer { margin-top: var(--gap); padding: 24px var(--gap) 88px; /* room for the fixed Feedback button */ background: var(--surface); }
 .mark { display: flex; align-items: flex-end; gap: 4px; height: 34svh; min-height: 240px; }
 .mark span { flex: 1; height: var(--h); display: flex; align-items: flex-end; justify-content: center; border-radius: var(--radius); background: var(--c); color: var(--surface); font-size: min(var(--step-display), 8.5vw); font-weight: 600; line-height: 0.8; padding-bottom: 0.06em; overflow: hidden; }
 .foot-cols { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); margin-top: 56px; padding-inline: var(--pad); }
@@ -327,7 +327,7 @@ p { text-wrap: pretty; }
   .visits-head, .visits-count { grid-column: 1; min-height: 0; }
   .visits-number { font-size: 18vw; }
 
-  .footer { margin-top: 112px; padding: 32px var(--gap) 20px; }
+  .footer { margin-top: var(--gap); padding: 32px var(--gap) 84px; }
   .mark { height: 22svh; min-height: 150px; gap: 3px; }
   .mark span { font-size: var(--step-head); border-radius: 4px; }
   .foot-cols { grid-template-columns: 1fr 1fr; gap: 24px 12px; padding-inline: 14px; margin-top: 40px; }
