@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { marked } from 'marked'
 import { Check, Copy, Download, RotateCcw } from 'lucide-react'
 import markdownCss from 'github-markdown-css/github-markdown.css?raw'
@@ -10,11 +10,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ListEditor, MoveButtons, SelectField, TextField, move } from '@/components/fields'
 import {
-  LEGACY_STORAGE_KEY, PRESETS, SNAKE_WORKFLOW, SOCIALS, STORAGE_KEY, defaultProfile, generateReadme, githubUser, mergeProfile,
+  LEGACY_STORAGE_KEY, PRESETS, SOCIALS, STORAGE_KEY, defaultProfile, generateReadme, githubUser, mergeProfile, snakeColor, snakeWorkflow,
   type BadgeStyle, type Certificate, type Job, type Profile, type Project, type SectionKey, type Skill, type Social,
 } from '@/lib/readme'
 
@@ -54,6 +55,31 @@ function ReadmePreview({ html }: { html: string }) {
       ref={ref} title="README preview" srcDoc={PREVIEW_SHELL} onLoad={() => setReady(true)}
       sandbox="allow-same-origin allow-popups" className="block h-[calc(100svh-9rem)] min-h-96 w-full"
     />
+  )
+}
+
+// Platane/snk's own snake colour, shown in the picker until the user chooses one.
+const DEFAULT_SNAKE_COLOR = '#800080'
+
+function SnakeColorField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const id = useId()
+  const color = snakeColor(value)
+  return (
+    <div className="grid gap-1.5">
+      <Label htmlFor={id}>Snake colour</Label>
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          id={id} type="color" value={color || DEFAULT_SNAKE_COLOR} onChange={e => onChange(e.target.value)}
+          className="h-8 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-0.5"
+        />
+        <Input
+          aria-label="Snake colour as a hex code" className="w-28" value={value} placeholder="Default" maxLength={7}
+          spellCheck={false} onChange={e => onChange(e.target.value)}
+        />
+        {color && <Button variant="ghost" size="sm" onClick={() => onChange('')}>Use default</Button>}
+      </div>
+      {value.trim() && !color && <p className="text-sm text-destructive">Use a six-digit hex colour, like #ff488b.</p>}
+    </div>
   )
 }
 
@@ -270,7 +296,7 @@ export default function Editor({ p, setP }: { p: Profile; setP: Dispatch<SetStat
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <TextField
-                  label="GitHub username" value={p.snake.username} onChange={v => patch('snake', { username: v })}
+                  label="GitHub username" value={p.snake.username} onChange={v => patch('snake', { ...p.snake, username: v })}
                   placeholder={snakeUser ? `${snakeUser} (from your GitHub link)` : 'e.g. octocat'}
                 />
                 <TextField
@@ -299,24 +325,28 @@ export default function Editor({ p, setP }: { p: Profile; setP: Dispatch<SetStat
                 Show the snake on my profile
               </label>
               <TextField
-                label="GitHub username" value={p.snake.username} onChange={v => patch('snake', { username: v })}
+                label="GitHub username" value={p.snake.username} onChange={v => patch('snake', { ...p.snake, username: v })}
                 placeholder={snakeUser ? `${snakeUser} (from your GitHub link)` : 'e.g. octocat'}
               />
               {p.settings.enabled.snake && !snakeUser && (
                 <p className="text-sm text-destructive">Add your GitHub username, or a GitHub link under Social links, to show the snake.</p>
               )}
+              <SnakeColorField value={p.snake.color} onChange={color => patch('snake', { ...p.snake, color })} />
               <ol className="grid list-decimal gap-2 pl-5 text-sm">
                 <li>In your profile repository, choose <strong>Add file → Create new file</strong> and name it <code>.github/workflows/snake.yml</code>.</li>
                 <li>Paste the workflow below and commit it to <code>main</code>.</li>
                 <li>Wait a minute for the action to finish. The snake shows up on your profile after that, and refreshes daily.</li>
               </ol>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={() => copy('snake', SNAKE_WORKFLOW)}>
+                <Button variant="outline" onClick={() => copy('snake', snakeWorkflow(p.snake.color))}>
                   {copied === 'snake' ? <Check /> : <Copy />} {copied === 'snake' ? 'Copied' : 'Copy workflow'}
                 </Button>
-                <Button variant="outline" onClick={() => downloadFile('snake.yml', SNAKE_WORKFLOW)}><Download /> Download snake.yml</Button>
+                <Button variant="outline" onClick={() => downloadFile('snake.yml', snakeWorkflow(p.snake.color))}><Download /> Download snake.yml</Button>
               </div>
               <p className="text-sm text-muted-foreground">Until the action has run once, the preview shows a missing image. That's expected.</p>
+              <p className="text-sm text-muted-foreground">
+                Changed the colour later? Copy the workflow again and replace <code>snake.yml</code>. The new colour shows after the action's next run.
+              </p>
             </div></AccordionContent>
           </AccordionItem>
         </Accordion>

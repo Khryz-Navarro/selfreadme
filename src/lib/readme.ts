@@ -26,7 +26,7 @@ export interface Profile {
   experience: Job[]
   certificates: Certificate[]
   socials: Social[]
-  snake: { username: string }
+  snake: { username: string; color: string }
 }
 
 // [label, simple-icons slug (https://simpleicons.org), brand hex]
@@ -89,7 +89,7 @@ export function defaultProfile(): Profile {
     experience: [{ role: 'Software Engineer', company: 'Acme Inc.', start: 'Jan 2024', end: '', description: 'Built and shipped customer-facing features.' }],
     certificates: [{ name: 'Example Certificate', issuer: 'Issuer', date: '2025', url: '' }],
     socials: [{ type: 'github', url: 'https://github.com/you' }, { type: 'linkedin', url: 'https://linkedin.com/in/you' }, { type: 'email', url: 'you@example.com' }],
-    snake: { username: '' },
+    snake: { username: '', color: '' },
   }
 }
 
@@ -104,7 +104,7 @@ export function applyVisitor(p: Profile, name: string, user: string): Profile {
   if (has(name)) next.intro.name = name.trim()
   if (has(user)) {
     const url = `https://github.com/${user.trim()}`
-    next.snake = { username: user.trim() }
+    next.snake = { ...p.snake, username: user.trim() }
     next.socials = p.socials.some(s => s.type === 'github')
       ? p.socials.map(s => (s.type === 'github' ? { ...s, url } : s))
       : [{ type: 'github', url }, ...p.socials]
@@ -119,11 +119,20 @@ export function mergeProfile(saved: Partial<Profile>): Profile {
   s.enabled = { ...d.settings.enabled, ...saved.settings?.enabled }
   s.titles = { ...d.settings.titles, ...saved.settings?.titles }
   s.order = [...s.order.filter(k => SECTION_KEYS.includes(k)), ...SECTION_KEYS.filter(k => !s.order.includes(k))]
-  return { ...d, ...saved, settings: s }
+  return { ...d, ...saved, settings: s, snake: { ...d.snake, ...saved.snake } }
+}
+
+// A snake colour as "#rrggbb", or '' for Platane/snk's default when the input isn't a six-digit hex colour.
+export function snakeColor(color: string) {
+  const hex = color.trim().replace(/^#/, '')
+  return /^[0-9a-fA-F]{6}$/.test(hex) ? `#${hex.toLowerCase()}` : ''
 }
 
 // Platane/snk draws the contribution graph as a snake SVG and publishes it to the profile repo's "output" branch.
-export const SNAKE_WORKFLOW = `name: Generate snake animation
+// A custom colour is applied to both the light and the dark version.
+export function snakeWorkflow(color: string) {
+  const c = snakeColor(color)
+  return `name: Generate snake animation
 
 on:
   schedule:
@@ -144,8 +153,8 @@ jobs:
         with:
           github_user_name: \${{ github.repository_owner }}
           outputs: |
-            dist/github-contribution-grid-snake.svg
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+            dist/github-contribution-grid-snake.svg${c ? `?color_snake=${c}` : ''}
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark${c ? `&color_snake=${c}` : ''}
 
       - uses: crazy-max/ghaction-github-pages@v4
         with:
@@ -154,6 +163,7 @@ jobs:
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
 `
+}
 
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const has = (v: string | undefined) => (v ?? '').trim() !== ''

@@ -96,7 +96,7 @@ export default function Landing() {
   const setName = (name: string) => setP(prev => ({ ...prev, intro: { ...prev.intro, name } }))
   const setUser = (raw: string) => {
     const u = raw.replace(/[^A-Za-z0-9-]/g, '').slice(0, 39)
-    setP(prev => (u ? applyVisitor(prev, '', u) : { ...prev, snake: { username: '' } }))
+    setP(prev => (u ? applyVisitor(prev, '', u) : { ...prev, snake: { ...prev.snake, username: '' } }))
   }
 
   // Reveal once on entering the viewport; never leaves content hidden.

@@ -50,7 +50,9 @@ test('older saved profiles gain new sections without losing settings', async () 
   assert.deepEqual(m.settings.order, ['socials', 'intro', 'skills', 'projects', 'experience', 'certificates', 'views', 'snake'])
   assert.equal(m.settings.enabled.snake, false)
   assert.equal(m.settings.titles.snake, '🐍 Contribution Snake')
-  assert.deepEqual(m.snake, { username: '' })
+  assert.deepEqual(m.snake, { username: '', color: '' })
+  const before = { ...defaultProfile(), snake: { username: 'octocat' } } as any
+  assert.deepEqual(mergeProfile(before).snake, { username: 'octocat', color: '' }, 'a saved username gains an empty colour')
 })
 
 test('landing visitor name and username carry into the editor profile', async () => {
@@ -76,4 +78,26 @@ test('profile views counter is off by default and uses the username and heading 
   assert.ok(md.indexOf('komarev') < md.indexOf('Tech Stack'), 'sits under the intro by default')
   p.socials = []
   assert.ok(!generateReadme(p).includes('komarev'), 'no username, no counter')
+})
+
+test('snake workflow uses the chosen colour for both versions, and only a valid one', async () => {
+  const { snakeColor, snakeWorkflow, applyVisitor, mergeProfile } = await import('../src/lib/readme.ts')
+  const plain = snakeWorkflow('')
+  assert.ok(plain.includes('dist/github-contribution-grid-snake.svg\n'))
+  assert.ok(plain.includes('dist/github-contribution-grid-snake-dark.svg?palette=github-dark\n'))
+  assert.ok(!plain.includes('color_snake'), 'no colour, no parameter')
+  assert.ok(plain.includes('github_user_name: ${{ github.repository_owner }}'), 'GitHub expressions stay intact')
+
+  const pink = snakeWorkflow('FF488B')
+  assert.ok(pink.includes('dist/github-contribution-grid-snake.svg?color_snake=#ff488b\n'))
+  assert.ok(pink.includes('dist/github-contribution-grid-snake-dark.svg?palette=github-dark&color_snake=#ff488b\n'))
+
+  assert.equal(snakeColor('#ff488b'), '#ff488b')
+  assert.equal(snakeColor(' 00AAFF '), '#00aaff')
+  for (const bad of ['red', '#fff', '12345g', '#ff488b; rm -rf', '']) assert.equal(snakeColor(bad), '', bad)
+  assert.ok(!snakeWorkflow('#ff488b\n  - run: evil').includes('evil'), 'invalid input never reaches the workflow')
+
+  const p = { ...defaultProfile(), snake: { username: 'old', color: '#00aaff' } }
+  assert.deepEqual(applyVisitor(p, '', 'new').snake, { username: 'new', color: '#00aaff' }, 'changing the username keeps the colour')
+  assert.equal(mergeProfile(p).snake.color, '#00aaff', 'a saved colour survives loading')
 })
