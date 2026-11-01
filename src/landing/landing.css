@@ -229,8 +229,18 @@ p { text-wrap: pretty; }
 .cta-copy { display: grid; justify-items: start; gap: 24px; }
 .cta-copy p { max-width: 40ch; }
 
+/* ---------- site visits ---------- */
+.visits { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); margin-top: 120px; padding: 0 var(--gap); }
+.visits-head { grid-column: 1 / 5; display: grid; align-content: space-between; gap: 24px; min-height: 260px; padding: var(--pad); background: var(--s1); }
+.visits-head p { max-width: 28ch; }
+.visits-count { grid-column: 5 / -1; display: grid; align-content: space-between; gap: 16px; padding: var(--pad); }
+/* Sized so a seven-digit count still fits on one line. */
+.visits-number { font-size: min(var(--step-display), 12vw); font-weight: 600; letter-spacing: -0.04em; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.visits-note { max-width: 52ch; }
+
 /* ---------- footer: the mark, built large ---------- */
-.footer { margin-top: 160px; padding: 48px var(--gap) 24px; background: var(--surface); }
+/* The visits row sits directly on the footer, as its top strip. */
+.footer { margin-top: var(--gap); padding: 24px var(--gap) 24px; background: var(--surface); }
 .mark { display: flex; align-items: flex-end; gap: 4px; height: 34svh; min-height: 240px; }
 .mark span { flex: 1; height: var(--h); display: flex; align-items: flex-end; justify-content: center; border-radius: var(--radius); background: var(--c); color: var(--surface); font-size: min(var(--step-display), 8.5vw); font-weight: 600; line-height: 0.8; padding-bottom: 0.06em; overflow: hidden; }
 .foot-cols { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); margin-top: 56px; padding-inline: var(--pad); }
@@ -238,6 +248,7 @@ p { text-wrap: pretty; }
 .foot-cols ul + ul { grid-column: 5 / 9; }
 .foot-note { grid-column: 9 / -1; max-width: 36ch; }
 .foot-last { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 56px; padding-inline: var(--pad); }
+.credit::before { content: " · "; }
 
 /* ---------- hover, only where hover is real ---------- */
 @media (hover: hover) and (pointer: fine) {
@@ -312,6 +323,10 @@ p { text-wrap: pretty; }
   .cta-side:first-child { grid-column: 1 / -1; grid-row: 2; height: 160px; border-radius: var(--radius); }
   .cta-side:last-child { display: none; }
 
+  .visits { grid-template-columns: 1fr; margin-top: 88px; }
+  .visits-head, .visits-count { grid-column: 1; min-height: 0; }
+  .visits-number { font-size: 18vw; }
+
   .footer { margin-top: 112px; padding: 32px var(--gap) 20px; }
   .mark { height: 22svh; min-height: 150px; gap: 3px; }
   .mark span { font-size: var(--step-head); border-radius: 4px; }
@@ -319,6 +334,9 @@ p { text-wrap: pretty; }
   .foot-cols ul, .foot-cols ul + ul { grid-column: auto; }
   .foot-note { grid-column: 1 / -1; }
   .foot-last { padding-inline: 14px; margin-top: 40px; }
+  .foot-last { flex-wrap: wrap; }
+  .credit { display: block; white-space: nowrap; }
+  .credit::before { content: none; }
 }
 @media (max-width: 599px) {
   .steps { grid-template-columns: 1fr; }

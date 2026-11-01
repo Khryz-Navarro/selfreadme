@@ -11,6 +11,52 @@ const EDITOR = '#editor'
 
 const v = (o: Record<string, string | number>) => o as CSSProperties
 
+// Public visit counter on Abacus (no cookies, CORS open, 30 requests per 10 s per visitor).
+const VISITS = 'https://abacus.jasoncameron.dev'
+const VISITS_KEY = 'khryz-navarro.github.io/selfreadme-visits'
+const COUNTED = 'selfreadme-visit-counted'
+
+// Counts one visit per browser session on the deployed site; local dev and previews only read the count.
+function VisitCounter() {
+  const [visits, setVisits] = useState<number | 'error' | null>(null)
+
+  useEffect(() => {
+    let counted = false
+    try { counted = sessionStorage.getItem(COUNTED) === '1' } catch { /* storage blocked: count this load */ }
+    const live = import.meta.env.PROD && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+    const action = live && !counted ? 'hit' : 'get'
+    let gone = false
+    fetch(`${VISITS}/${action}/${VISITS_KEY}`)
+      // A counter nobody has hit yet doesn't exist: that's zero visits, not an error.
+      .then(r => (r.ok ? r.json() : r.status === 404 ? { value: 0 } : Promise.reject(new Error(String(r.status)))))
+      .then((d: { value: number }) => {
+        if (action === 'hit') try { sessionStorage.setItem(COUNTED, '1') } catch { /* counted again next load */ }
+        if (!gone) setVisits(d.value)
+      })
+      .catch(() => { if (!gone) setVisits('error') })
+    return () => { gone = true }
+  }, [])
+
+  return (
+    <section className="visits" aria-labelledby="visits-title">
+      <div className="tile visits-head">
+        <h2 id="visits-title" className="head">Site visits</h2>
+        <p>Visits to Selfreadme since November 2026.</p>
+      </div>
+      <div className="tile visits-count">
+        <p className="visits-number" aria-live="polite">
+          {visits === null ? '…' : visits === 'error' ? '–' : new Intl.NumberFormat('en').format(visits)}
+        </p>
+        <p className="visits-note">
+          {visits === 'error'
+            ? "The count couldn't load right now."
+            : 'Counted once per browser session with Abacus. No cookies, and nothing you type is sent.'}
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function SnakeGrid({ cols, rows, className, label }: { cols: number; rows: number; className: string; label: string }) {
   const levels = useMemo(() => {
     let seed = 7
@@ -230,6 +276,8 @@ export default function Landing() {
           </div>
           <div className="tile cta-side s2" aria-hidden="true" />
         </section>
+
+        <VisitCounter />
       </main>
 
       <footer className="footer" aria-label="Selfreadme">
@@ -253,7 +301,7 @@ export default function Landing() {
           <p className="foot-note">Made for students and new developers putting together their first GitHub profile. Selfreadme is not affiliated with GitHub.</p>
         </div>
         <div className="foot-last">
-          <p>© 2026 Selfreadme</p>
+          <p>© 2026 Selfreadme<span className="credit">Developed by Khryz</span></p>
           <a className="button small" href={EDITOR}>Build my README</a>
         </div>
       </footer>
@@ -266,7 +314,7 @@ const FAQ: [string, string][] = [
   ['Why does the repository need my username as its name?', 'That\'s how GitHub knows it\'s your profile README. If your username is mayareyes, the repository is github.com/mayareyes/mayareyes. Create it as public and tick "Add a README file", then replace that file with yours.'],
   ['Do I need to know markdown or HTML?', 'No. You fill in fields and tap badges; Selfreadme writes the markdown and the small bits of HTML GitHub allows for centring and badges. You can look at the code it writes, but you never have to touch it.'],
   ['Is it free? Do I need an account?', "It's free, and there's no account. The editor is right on this page; start typing."],
-  ['Where is my information stored?', 'Only in your own browser, so you can close the tab and pick up where you left off. Nothing you type is sent to a Selfreadme server. Badge images load from shields.io, the same place your finished profile loads them from.'],
+  ['Where is my information stored?', 'Only in your own browser, so you can close the tab and pick up where you left off. Nothing you type is sent to a Selfreadme server. Badge images load from shields.io, the same place your finished profile loads them from, and each visit adds one to a public visit counter on Abacus, without cookies.'],
   ['Can I change it later?', 'Yes. Come back in the same browser and your profile is still there. Edit it, download again, and replace README.md in your repository.'],
   ['How does the contribution snake work?', 'Selfreadme gives you a small GitHub Actions file to copy or download. Add it to your profile repository and GitHub redraws the snake from your contribution graph every day.'],
   ['Will it look the same on GitHub?', 'The preview uses GitHub\'s own markdown styles and only the HTML GitHub accepts, so what you approve is what visitors see.'],
