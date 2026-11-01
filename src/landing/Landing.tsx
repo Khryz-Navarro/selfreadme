@@ -294,6 +294,8 @@ export default function Landing() {
             <li><a className="link" href={EDITOR}>Go to the editor</a></li>
             <li><a className="link" href="#features">What's included</a></li>
             <li><a className="link" href="#faq">Questions</a></li>
+            <li><a className="link" href="https://github.com/Khryz-Navarro/selfreadme">Source code on GitHub</a></li>
+            <li><a className="link" href="https://buymeacoffee.com/khryznavarz">Buy me a coffee</a></li>
           </ul>
           <ul aria-label="Learn more">
             <li><a className="link" href="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme">GitHub's profile README guide</a></li>
