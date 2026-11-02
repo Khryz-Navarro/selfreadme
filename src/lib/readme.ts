@@ -280,5 +280,6 @@ const SECTIONS: Record<SectionKey, (p: Profile, title: string) => string> = {
 
 export function generateReadme(p: Profile) {
   const { order, enabled, titles } = p.settings
-  return order.filter(k => enabled[k]).map(k => SECTIONS[k](p, titles[k])).filter(Boolean).join('\n\n') + '\n'
+  return order.filter(k => enabled[k]).map(k => SECTIONS[k](p, titles[k])).filter(Boolean).join('\n\n')
+    + '\n\n<!-- created with Selfreadme ( https://khryz-navarro.github.io/selfreadme/ ) -->\n'
 }

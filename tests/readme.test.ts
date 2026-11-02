@@ -18,6 +18,7 @@ test('sections follow order, skip disabled and empty ones', () => {
   assert.ok(!md.includes('Work Experience'))
   assert.ok(!md.includes('Certificates'))
   assert.ok(md.includes('href="mailto:you@example.com"'))
+  assert.ok(md.endsWith('\n\n<!-- created with Selfreadme ( https://khryz-navarro.github.io/selfreadme/ ) -->\n'))
 })
 
 test('user text cannot break out of html attributes', () => {
