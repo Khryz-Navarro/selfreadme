@@ -177,22 +177,21 @@ p { text-wrap: pretty; }
     "h h h h h h b b b b b b"
     "s s s l l l b b b b b b"
     "s s s l l l b b b b b b"
-    "s s s l l l m m m m m m"
-    "s s s l l l m m m m m m"
+    "s s s l l l b b b b b b"
+    "s s s l l l b b b b b b"
     "p p p p p p x x x y y y"
     "p p p p p p x x x y y y";
 }
 .b-head { grid-area: h; padding: var(--pad); background: var(--s1); color: var(--s1-ink); }
 .b-head h2 { font-size: var(--step-head); max-width: 12ch; }
-.b-badges { grid-area: b; background: #0a0a0a; }
-.b-snake { grid-area: s; background: #0a0a0a; }
-.b-layout { grid-area: l; background: #0a0a0a; }
-.b-code { grid-area: m; background: #171717; }
+.b-badges { grid-area: b; }
+.b-snake { grid-area: s; }
+.b-layout { grid-area: l; }
 .b-socials { grid-area: p; background: var(--s2); color: var(--s2-ink); }
 .b-copy { grid-area: x; background: var(--s3); color: var(--s3-ink); }
 .b-private { grid-area: y; background: var(--s4); color: var(--pink-ink); }
 
-.macro figcaption, .macro .cap { position: absolute; left: 12px; bottom: 12px; max-width: min(34ch, calc(100% - 24px)); padding: 14px 16px; border-radius: 6px; background: var(--bg); color: var(--ink); font-size: var(--step-small); line-height: 1.4; }
+.macro figcaption, .macro .cap { position: absolute; left: 12px; bottom: 12px; max-width: min(34ch, calc(100% - 24px)); padding: 14px 16px; border-radius: 6px; background: var(--ink); color: var(--bg); font-size: var(--step-small); line-height: 1.4; }
 .macro figcaption b, .macro .cap b { display: block; font-size: var(--step-body); font-weight: 500; line-height: 1.3; margin-bottom: 2px; }
 .big-badges { position: absolute; left: 38%; top: -14px; display: grid; gap: 12px; transform: rotate(-4deg); }
 .big-badges img { height: 76px; width: auto; }
@@ -200,6 +199,26 @@ p { text-wrap: pretty; }
 .word { position: absolute; left: 20px; top: 16px; font-size: var(--step-head); font-weight: 600; letter-spacing: -0.035em; line-height: 1; white-space: nowrap; }
 .b-copy .cap, .b-private .cap { position: absolute; left: 20px; bottom: 16px; padding: 0; background: none; color: inherit; }
 .b-socials .cap { background: var(--s1); color: var(--s1-ink); }
+/* live demos on the board: the demo fills the tile, the caption docks under it */
+.demo { display: flex; flex-direction: column; }
+.macro.demo .cap { position: static; align-self: center; width: min(44ch, calc(100% - 24px)); max-width: none; margin: auto 12px 16px; text-align: center; background: var(--pink); color: var(--pink-ink); }
+.chips { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 20px 20px 12px; }
+.chips button { min-height: 52px; padding: 0 20px; border: 1px solid var(--line); border-radius: 999px; font-size: var(--step-body); transition: background-color var(--t-hover) ease, border-color var(--t-hover) ease; }
+.chips button[aria-pressed="true"] { border-color: var(--pink); background: var(--pink); color: var(--pink-ink); }
+/* The picked badges as they will look in the README, filling the space under the chips. */
+.demo-badges { flex: 1; min-height: 52px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 8px; margin: 0 20px 12px; padding: 12px; border-radius: 6px; overflow: hidden; background: var(--bg); color: var(--muted-ink); }
+.demo-badges img { height: 28px; width: auto; }
+.demo-badges p { margin: 0; }
+.demo-switch { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; }
+.b-snake > .demo-switch { padding: 12px 20px 4px; }
+/* The desktop tile has a fixed height: square cells sized by whichever of its width or height runs out first (10 × 8 cells, 4px gaps). */
+.demo-grid-box { flex: 1; min-height: 0; display: grid; place-items: center; padding: 8px 20px; container-type: size; }
+.demo-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; padding: 0; width: calc(min((100cqw - 36px) / 10, (100cqh - 28px) / 8) * 10 + 36px); }
+.demo-list { flex: 1; display: flex; flex-direction: column; list-style: none; margin: 0; padding: 4px 20px 0; font-size: var(--step-body); }
+.demo-list li { flex: 1; display: flex; border-bottom: 1px solid var(--line); }
+.demo-list li:last-child { border-bottom: 0; }
+.demo-list .demo-switch { flex: 1; }
+.demo-list li:has([data-state="unchecked"]) { color: var(--muted-ink); }
 
 /* ---------- how it works: one card, four fields ---------- */
 .steps { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 160px; }
@@ -306,13 +325,18 @@ p { text-wrap: pretty; }
   .editor-section { padding-top: 88px; }
   .editor-section > div { padding-inline: 10px; }
 
-  .board { grid-template-columns: 1fr 1fr; grid-auto-rows: 28vw; grid-template-areas: none; }
+  /* Rows grow to fit, so the live demos size to their content. */
+  .board { grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(28vw, auto); grid-template-areas: none; }
   .b-head { grid-column: 1 / -1; grid-row: span 2; }
-  .b-badges, .b-code { grid-column: 1 / -1; grid-row: span 3; }
+  .b-badges { grid-column: 1 / -1; grid-row: auto; }
   .b-snake, .b-layout, .b-socials, .b-copy, .b-private { grid-area: auto; grid-row: span 2; }
-  .b-snake, .b-layout, .b-socials { grid-column: 1 / -1; }
+  .b-socials { grid-column: 1 / -1; }
   .macro figcaption, .macro .cap { left: 8px; right: 8px; bottom: 8px; max-width: none; padding: 10px 12px; }
   .b-copy .cap, .b-private .cap { left: 14px; right: 14px; bottom: 12px; }
+  .macro.demo .cap { margin: auto 8px 12px; }
+  .demo-grid-box { flex: none; display: block; place-items: normal; container-type: normal; }
+  .demo-grid { width: auto; }
+  .chips button { min-height: 40px; padding: 0 14px; font-size: var(--step-small); }
   .big-badges img { height: 56px; }
   .key { left: 14px; top: 14px; }
   .word { left: 14px; top: 14px; }
@@ -353,5 +377,6 @@ p { text-wrap: pretty; }
   .credit::before { content: none; }
 }
 @media (max-width: 599px) {
+  .b-snake, .b-layout { grid-column: 1 / -1; grid-row: auto; }
   .steps { grid-template-columns: 1fr; }
 }

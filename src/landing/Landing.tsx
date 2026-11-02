@@ -2,12 +2,9 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Editor, { useProfile } from '@/App'
 import Feedback from './Feedback'
 import ThemePanel from './ThemePanel'
-import { applyVisitor, badgeUrl, githubUser } from '@/lib/readme'
-import badgesImg from './img/badges.jpg'
+import { Switch } from '@/components/ui/switch'
+import { applyVisitor, badgeUrl, githubUser, PRESETS } from '@/lib/readme'
 import editorImg from './img/editor.jpg'
-import layoutImg from './img/layout.jpg'
-import markdownImg from './img/markdown.jpg'
-import snakeImg from './img/snake.jpg'
 
 const EDITOR = '#editor'
 
@@ -59,7 +56,7 @@ function VisitCounter() {
   )
 }
 
-function SnakeGrid({ cols, rows, className, label }: { cols: number; rows: number; className: string; label: string }) {
+function SnakeGrid({ cols, rows, className, label, on = true }: { cols: number; rows: number; className: string; label: string; on?: boolean }) {
   const levels = useMemo(() => {
     let seed = 7
     return Array.from({ length: cols * rows }, () => {
@@ -77,17 +74,62 @@ function SnakeGrid({ cols, rows, className, label }: { cols: number; rows: numbe
   const [step, setStep] = useState(3)
 
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!on || matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const t = setInterval(() => setStep(s => (s + 1) % path.length), 140)
     return () => clearInterval(t)
-  }, [path.length])
+  }, [path.length, on])
 
-  const eaten = new Set(path.slice(0, step + 1))
-  const body = new Set([0, 1, 2, 3].map(k => path[(step - k + path.length) % path.length]))
+  const eaten = new Set(on ? path.slice(0, step + 1) : [])
+  const body = new Set(on ? [0, 1, 2, 3].map(k => path[(step - k + path.length) % path.length]) : [])
   return (
     <div className={className} role="img" aria-label={label}>
       {levels.map((l, i) => <i key={i} data-l={eaten.has(i) ? 0 : l} className={body.has(i) ? 'snake' : undefined} />)}
     </div>
+  )
+}
+
+const DEMO_SECTIONS = ['Introduction', 'Tech stack', 'Projects', 'Work experience', 'Certificates']
+
+// Clickable stand-ins for the editor on the features board. Demo state only: the visitor's profile is untouched.
+function BoardDemos() {
+  const [picked, setPicked] = useState(['JavaScript', 'Python', 'CSS'])
+  const [snake, setSnake] = useState(true)
+  const [hidden, setHidden] = useState(['Work experience'])
+  const flip = (list: string[], x: string) => (list.includes(x) ? list.filter(y => y !== x) : [...list, x])
+
+  return (
+    <>
+      <div className="tile macro demo b-badges" data-reveal style={v({ '--i': 1 })} data-ui>
+        <div className="chips" role="group" aria-label="Badge presets">
+          {PRESETS.map(([n]) => (
+            <button key={n} type="button" aria-pressed={picked.includes(n)} onClick={() => setPicked(l => flip(l, n))}>{n}</button>
+          ))}
+        </div>
+        <div className="demo-badges" aria-live="polite">
+          {picked.length
+            ? PRESETS.filter(([n]) => picked.includes(n)).map(([n, logo, color]) => (
+              <img key={n} src={badgeUrl(n, logo, color, 'for-the-badge')} alt={n} height={28} />
+            ))
+            : <p>Tap a badge to see it here.</p>}
+        </div>
+        <p className="cap"><b>43 badge presets</b>Tap Python, React or Figma; the badge and its logo are added for you.</p>
+      </div>
+      <div className="tile macro demo b-snake" data-reveal style={v({ '--i': 2 })} data-ui>
+        <label className="demo-switch"><Switch checked={snake} onCheckedChange={setSnake} /> Show the snake</label>
+        <div className="demo-grid-box">
+          <SnakeGrid cols={10} rows={8} className="hero-grid demo-grid" label="A contribution graph with the snake eating its way through" on={snake} />
+        </div>
+        <p className="cap"><b>Contribution snake</b>The daily GitHub Action is written for you.</p>
+      </div>
+      <div className="tile macro demo b-layout" data-reveal style={v({ '--i': 3 })} data-ui>
+        <ul className="demo-list" aria-label="Sections">
+          {DEMO_SECTIONS.map(n => (
+            <li key={n}><label className="demo-switch"><Switch checked={!hidden.includes(n)} onCheckedChange={() => setHidden(l => flip(l, n))} /> {n}</label></li>
+          ))}
+        </ul>
+        <p className="cap"><b>Your order, your headings</b>Hide, rename and reorder any section.</p>
+      </div>
+    </>
   )
 }
 
@@ -189,22 +231,7 @@ export default function Landing() {
           <div className="tile b-head" data-reveal>
             <h2 id="features-title" className="head">Everything a profile needs</h2>
           </div>
-          <figure className="tile macro b-badges" data-reveal style={v({ '--i': 1 })}>
-            <img src={badgesImg} width={1224} height={3650} alt="Selfreadme's tech badge picker with JavaScript, Python, React and other presets" loading="lazy" style={v({ '--w': '1100px', '--x': '-12px', '--y': '-76px' })} />
-            <figcaption><b>43 badge presets</b>Tap Python, React or Figma; the badge and its logo are added for you.</figcaption>
-          </figure>
-          <figure className="tile macro b-snake" data-reveal style={v({ '--i': 2 })}>
-            <img src={snakeImg} width={1224} height={876} alt="The contribution snake panel with its on switch and username field" loading="lazy" style={v({ '--w': '918px', '--x': '-6px', '--y': '-128px' })} />
-            <figcaption><b>Contribution snake</b>The daily GitHub Action is written for you.</figcaption>
-          </figure>
-          <figure className="tile macro b-layout" data-reveal style={v({ '--i': 3 })}>
-            <img src={layoutImg} width={1224} height={906} alt="Section switches for Introduction, Tech stack, Projects and Work experience" loading="lazy" style={v({ '--w': '1469px', '--x': '-8px', '--y': '-330px' })} />
-            <figcaption><b>Your order, your headings</b>Hide, rename and reorder any section.</figcaption>
-          </figure>
-          <figure className="tile macro b-code" data-reveal style={v({ '--i': 1 })}>
-            <img src={markdownImg} width={1224} height={1512} alt="The markdown Selfreadme writes, with shields.io badge links" loading="lazy" style={v({ '--w': '980px', '--x': '-14px', '--y': '-500px' })} />
-            <figcaption><b>Clean markdown, written for you</b>Look at it whenever you like. You never have to edit it.</figcaption>
-          </figure>
+          <BoardDemos />
           <div className="tile macro b-socials" data-reveal style={v({ '--i': 2 })} data-ui>
             <div className="big-badges" aria-hidden="true">
               <img src={badgeUrl('GitHub', 'github', '181717', 'for-the-badge')} width={105} height={28} alt="" />
