@@ -97,3 +97,38 @@ test('saved profiles from before the rename get the new example name, edits stay
   edited.intro.working = 'my thesis'
   assert.equal(mergeProfile(edited).intro.working, 'my thesis')
 })
+
+test('templates change layout settings but never the content', async () => {
+  const { applyTemplate, mergeProfile } = await import('../src/lib/readme.ts')
+  const p = defaultProfile()
+  const r = applyTemplate(p, 'recruiter')
+  assert.equal(r.settings.template, 'recruiter')
+  assert.equal(r.settings.order[1], 'experience')
+  assert.deepEqual([r.intro, r.projects], [p.intro, p.projects])
+  assert.equal(applyTemplate(r, 'classic').settings.titles.skills, p.settings.titles.skills)
+  const { template: _, ...old } = p.settings
+  assert.equal(mergeProfile({ ...p, settings: old as typeof p.settings }).settings.template, 'classic')
+})
+
+test('terminal, recruiter and banner render their own sections', async () => {
+  const { applyTemplate } = await import('../src/lib/readme.ts')
+  const p = defaultProfile()
+  const terminal = generateReadme(applyTemplate(p, 'terminal'))
+  assert.ok(terminal.startsWith('```bash\n$ whoami\nYour Name'))
+  assert.ok(terminal.includes('learning: Rust'))
+
+  p.projects = [{ name: 'A|B', url: '', description: 'one\ntwo', tech: 'React' }]
+  const recruiter = generateReadme(applyTemplate(p, 'recruiter'))
+  assert.ok(recruiter.includes('| A\\|B | one two | `React` |'))
+
+  p.intro.name = 'Ana & Co'
+  const banner = generateReadme(applyTemplate(p, 'banner'))
+  assert.ok(banner.includes('capsule-render.vercel.app/api?type=waving&amp;color=gradient'))
+  assert.ok(banner.includes('text=Ana+%26+Co'))
+  assert.ok(banner.includes('readme-typing-svg.demolab.com?lines='))
+})
+
+test('a wrong unlock code is rejected', async () => {
+  const { unlock } = await import('../src/lib/pro.ts')
+  assert.equal(await unlock('nope'), false)
+})

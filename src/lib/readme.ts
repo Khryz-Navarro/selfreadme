@@ -2,6 +2,7 @@
 
 export type SectionKey = 'intro' | 'skills' | 'projects' | 'experience' | 'certificates' | 'socials' | 'snake' | 'views'
 export type BadgeStyle = 'for-the-badge' | 'flat' | 'flat-square' | 'plastic' | 'social'
+export type TemplateKey = 'classic' | 'minimal' | 'terminal' | 'recruiter' | 'banner'
 
 export interface Skill { name: string; logo: string; color: string }
 export interface Project { name: string; url: string; description: string; tech: string }
@@ -11,6 +12,7 @@ export interface Social { type: string; url: string }
 
 export interface Profile {
   settings: {
+    template: TemplateKey
     badgeStyle: BadgeStyle
     align: 'center' | 'left'
     order: SectionKey[]
@@ -64,6 +66,7 @@ export const SECTION_KEYS: SectionKey[] = ['intro', 'views', 'skills', 'projects
 export function defaultProfile(): Profile {
   return {
     settings: {
+      template: 'classic',
       badgeStyle: 'for-the-badge',
       align: 'center',
       order: [...SECTION_KEYS],
@@ -90,6 +93,56 @@ export function defaultProfile(): Profile {
     certificates: [{ name: 'Example Certificate', issuer: 'Issuer', date: '2025', url: '' }],
     socials: [{ type: 'github', url: 'https://github.com/you' }, { type: 'linkedin', url: 'https://linkedin.com/in/you' }, { type: 'email', url: 'you@example.com' }],
     snake: { username: '' },
+  }
+}
+
+const PLAIN_TITLES: Record<SectionKey, string> = {
+  intro: "Hi, I'm", skills: 'Tech Stack', projects: 'Projects', experience: 'Work Experience',
+  certificates: 'Certificates', socials: 'Connect with me', snake: 'Contribution Snake', views: 'Profile views',
+}
+
+type TemplateSettings = Partial<Omit<Profile['settings'], 'template' | 'enabled' | 'titles'>> & {
+  enabled?: Partial<Record<SectionKey, boolean>>; titles?: Partial<Record<SectionKey, string>>
+}
+
+const D = defaultProfile().settings
+
+// Pro templates are the paid pack (see pro.ts). Applying a template changes layout settings, never content.
+export const TEMPLATES: Record<TemplateKey, { name: string; pro: boolean; settings: TemplateSettings }> = {
+  classic: {
+    name: 'Classic', pro: false,
+    settings: {
+      badgeStyle: D.badgeStyle, align: D.align, order: D.order, titles: D.titles,
+      enabled: { intro: true, skills: true, projects: true, experience: true, certificates: true, socials: true },
+    },
+  },
+  minimal: {
+    name: 'Minimal', pro: false,
+    settings: {
+      align: 'left', badgeStyle: 'flat', titles: PLAIN_TITLES,
+      enabled: { intro: true, skills: true, socials: true, projects: false, experience: false, certificates: false, snake: false, views: false },
+    },
+  },
+  terminal: { name: 'Terminal', pro: true, settings: { align: 'left', badgeStyle: 'flat-square', titles: PLAIN_TITLES } },
+  recruiter: {
+    name: 'Recruiter', pro: true,
+    settings: {
+      align: 'left', badgeStyle: 'flat', titles: PLAIN_TITLES,
+      order: ['intro', 'experience', 'projects', 'skills', 'certificates', 'socials', 'views', 'snake'],
+      enabled: { experience: true, projects: true, certificates: true },
+    },
+  },
+  banner: { name: 'Banner', pro: true, settings: { align: 'center', badgeStyle: 'for-the-badge', enabled: { views: true } } },
+}
+
+export function applyTemplate(p: Profile, key: TemplateKey): Profile {
+  const { enabled, titles, ...rest } = TEMPLATES[key].settings
+  return {
+    ...p,
+    settings: {
+      ...p.settings, ...rest, template: key,
+      enabled: { ...p.settings.enabled, ...enabled }, titles: { ...p.settings.titles, ...titles },
+    },
   }
 }
 
@@ -193,16 +246,40 @@ const link =(text: string, url: string) => (has(url) ? `[${text}](${url.trim()})
 
 const SECTIONS: Record<SectionKey, (p: Profile, title: string) => string> = {
   intro(p, title) {
-    const i = p.intro, a = p.settings.align, out: string[] = []
-    if (has(i.name)) out.push(`<h1 align="${a}">${esc(title)} ${esc(i.name)}</h1>`)
-    if (has(i.title)) out.push(`<h3 align="${a}">${esc(i.title)}</h3>`)
-    if (has(i.avatar)) out.push(`<p align="${a}"><img src="${esc(i.avatar.trim())}" alt="${esc(i.name)}" width="160" /></p>`)
-    if (has(i.about)) out.push(i.about.trim())
+    const i = p.intro, a = p.settings.align, t = p.settings.template, out: string[] = []
+    const avatar = `<p align="${a}"><img src="${esc(i.avatar.trim())}" alt="${esc(i.name)}" width="160" /></p>`
     const facts = ([
-      ['🔭', "I'm currently working on", i.working], ['🌱', "I'm currently learning", i.learning],
-      ['📍', 'Based in', i.location], ['💬', 'Ask me about', i.askMe], ['⚡', 'Fun fact:', i.funFact],
-    ] as const).filter(f => has(f[2])).map(([e, t, v]) => `- ${e} ${t} **${v.trim()}**`)
-    if (facts.length) out.push(facts.join('\n'))
+      ['🔭', "I'm currently working on", 'working', i.working], ['🌱', "I'm currently learning", 'learning', i.learning],
+      ['📍', 'Based in', 'location', i.location], ['💬', 'Ask me about', 'ask_me', i.askMe], ['⚡', 'Fun fact:', 'fun_fact', i.funFact],
+    ] as const).filter(f => has(f[3]))
+    if (t === 'terminal') {
+      // A ``` in the user's text would close the code block early.
+      const code = (v: string) => v.trim().replace(/```/g, "'''")
+      const lines = ['```bash', '$ whoami', [i.name, i.title].filter(has).map(code).join(' — ')]
+      if (has(i.about)) lines.push('', '$ cat about.txt', code(i.about))
+      if (facts.length) lines.push('', '$ cat facts.txt', ...facts.map(([, , k, v]) => `${k}: ${code(v)}`))
+      lines.push('```')
+      if (has(i.avatar)) out.push(avatar)
+      out.push(lines.join('\n'))
+      return out.join('\n\n')
+    }
+    if (t === 'banner') {
+      const header = new URLSearchParams({ type: 'waving', color: 'gradient', height: '200', section: 'header', text: i.name.trim(), fontAlignY: '35' })
+      out.push(`<img src="https://capsule-render.vercel.app/api?${esc(header.toString())}" alt="${esc(i.name)}" width="100%" />`)
+      // The typing SVG splits its lines on ";".
+      const typed = [i.title, has(i.learning) ? `Currently learning ${i.learning.trim()}` : ''].filter(has).map(v => v.trim().replace(/;/g, ','))
+      if (typed.length) {
+        const q = new URLSearchParams({ lines: typed.join(';'), center: 'true', vCenter: 'true', width: '600', height: '50' })
+        out.push(`<p align="${a}"><img src="https://readme-typing-svg.demolab.com?${esc(q.toString())}" alt="${esc(typed[0])}" /></p>`)
+      }
+    } else {
+      if (has(i.name)) out.push(`<h1 align="${a}">${esc(title)} ${esc(i.name)}</h1>`)
+      if (has(i.title)) out.push(`<h3 align="${a}">${esc(i.title)}</h3>`)
+      if (t === 'minimal') return out.join('\n\n')
+    }
+    if (has(i.avatar)) out.push(avatar)
+    if (has(i.about)) out.push(i.about.trim())
+    if (facts.length) out.push(facts.map(([e, label, , v]) => `- ${e} ${label} **${v.trim()}**`).join('\n'))
     return out.join('\n\n')
   },
   skills(p, title) {
@@ -214,11 +291,17 @@ const SECTIONS: Record<SectionKey, (p: Profile, title: string) => string> = {
   projects(p, title) {
     const items = p.projects.filter(x => has(x.name))
     if (!items.length) return ''
+    const tech = (x: Project) => x.tech.split(',').map(t => t.trim()).filter(Boolean).map(t => `\`${t}\``).join(' ')
+    if (p.settings.template === 'recruiter') {
+      // A "|" or a line break in a cell would split the table.
+      const cell = (v: string) => v.trim().replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ')
+      const rows = items.map(x => `| ${cell(link(x.name.trim(), x.url))} | ${cell(x.description)} | ${cell(tech(x))} |`)
+      return `## ${title}\n\n| Project | Description | Tech |\n| --- | --- | --- |\n${rows.join('\n')}`
+    }
     const blocks = items.map(x => {
       const lines = [`### ${link(x.name.trim(), x.url)}`]
       if (has(x.description)) lines.push(x.description.trim())
-      const tech = x.tech.split(',').map(t => t.trim()).filter(Boolean)
-      if (tech.length) lines.push(tech.map(t => `\`${t}\``).join(' '))
+      if (tech(x)) lines.push(tech(x))
       return lines.join('\n\n')
     })
     return `## ${title}\n\n${blocks.join('\n\n')}`

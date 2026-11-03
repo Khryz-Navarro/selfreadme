@@ -14,9 +14,10 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ListEditor, MoveButtons, SelectField, TextField, move } from '@/components/fields'
 import {
-  LEGACY_STORAGE_KEY, PRESETS, SNAKE_WORKFLOW, SOCIALS, STORAGE_KEY, defaultProfile, generateReadme, githubUser, mergeProfile,
-  type BadgeStyle, type Certificate, type Job, type Profile, type Project, type SectionKey, type Skill, type Social,
+  LEGACY_STORAGE_KEY, PRESETS, SNAKE_WORKFLOW, SOCIALS, STORAGE_KEY, TEMPLATES, applyTemplate, defaultProfile, generateReadme, githubUser, mergeProfile,
+  type BadgeStyle, type Certificate, type Job, type Profile, type Project, type SectionKey, type Skill, type Social, type TemplateKey,
 } from '@/lib/readme'
+import { PRO_URL, isUnlocked, unlock } from '@/lib/pro'
 
 
 function load(): Profile {
@@ -91,6 +92,16 @@ export default function Editor({ p, setP }: { p: Profile; setP: Dispatch<SetStat
     setCopied(key)
     setTimeout(() => setCopied(null), 1500)
   }
+  const [pro, setPro] = useState(isUnlocked)
+  const [code, setCode] = useState('')
+  const [badCode, setBadCode] = useState(false)
+  // Pro templates can be tried in the preview; copying and downloading them needs the unlock code.
+  const locked = TEMPLATES[p.settings.template].pro && !pro
+  const tryUnlock = async () => {
+    const ok = await unlock(code)
+    setPro(ok)
+    setBadCode(!ok)
+  }
   const snakeUser = githubUser(p)
   const toggleSkill = ([name, logo, color]: [string, string, string]) =>
     patch('skills', p.skills.some(s => s.name === name) ? p.skills.filter(s => s.name !== name) : [...p.skills, { name, logo, color }])
@@ -121,8 +132,8 @@ export default function Editor({ p, setP }: { p: Profile; setP: Dispatch<SetStat
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Button variant="outline" onClick={() => copy('md', md)}>{copied === 'md' ? <Check /> : <Copy />} {copied === 'md' ? 'Copied' : 'Copy markdown'}</Button>
-        <Button onClick={() => downloadFile('README.md', md)}><Download /> Download README.md</Button>
+        <Button variant="outline" disabled={locked} onClick={() => copy('md', md)}>{copied === 'md' ? <Check /> : <Copy />} {copied === 'md' ? 'Copied' : 'Copy markdown'}</Button>
+        <Button disabled={locked} onClick={() => downloadFile('README.md', md)}><Download /> Download README.md</Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -130,6 +141,34 @@ export default function Editor({ p, setP }: { p: Profile; setP: Dispatch<SetStat
           <AccordionItem value="layout">
             <AccordionTrigger>Layout & style</AccordionTrigger>
             <AccordionContent><div className="p-1 grid gap-4">
+              <div className="grid gap-2">
+                <span className="text-sm font-medium">Template</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(TEMPLATES) as TemplateKey[]).map(key => {
+                    const on = p.settings.template === key
+                    return (
+                      <Button key={key} size="xs" variant={on ? 'default' : 'outline'} aria-pressed={on} onClick={() => setP(prev => applyTemplate(prev, key))}>
+                        {TEMPLATES[key].name}{TEMPLATES[key].pro && !pro ? ' · Pro' : ''}
+                      </Button>
+                    )
+                  })}
+                </div>
+                <p className="text-sm text-muted-foreground">A template sets the layout and style below. Your content stays as it is.</p>
+              </div>
+              {locked && (
+                <div className="grid gap-2 rounded-md border p-3">
+                  <p className="text-sm">
+                    {TEMPLATES[p.settings.template].name} is part of the Pro templates pack. Try it in the preview, then{' '}
+                    <a className="underline underline-offset-2" href={PRO_URL} target="_blank" rel="noreferrer">get the pack on Buy Me a Coffee</a>{' '}
+                    to copy and download it.
+                  </p>
+                  <form className="flex gap-2" onSubmit={e => { e.preventDefault(); void tryUnlock() }}>
+                    <Input aria-label="Unlock code" placeholder="Unlock code" value={code} onChange={e => { setCode(e.target.value); setBadCode(false) }} />
+                    <Button type="submit" variant="outline" disabled={!code.trim()}>Unlock</Button>
+                  </form>
+                  {badCode && <p className="text-sm text-destructive">That code didn't work. Check it against your Buy Me a Coffee receipt.</p>}
+                </div>
+              )}
               <div className="grid gap-3 sm:grid-cols-2">
                 <SelectField
                   label="Badge style" value={p.settings.badgeStyle} onChange={v => setSettings({ badgeStyle: v as BadgeStyle })}
