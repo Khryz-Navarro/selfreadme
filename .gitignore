@@ -31,3 +31,12 @@ dist-ssr
 .claude/settings.local.json
 # Impeccable's platform binary; its launcher downloads it again on first run
 .claude/skills/impeccable/scripts/bin/
+
+# Screenshots for social posts
+facebook-post/
+
+# Locally installed skills (Remotion) and the Remotion demo video project
+.agents/skills/remotion-*
+.claude/skills/remotion-*
+.claude/skills/design-taste-frontend
+demo/
